@@ -3,6 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import userRouter from './routes/users';
+import cardRouter from './routes/cards';
 
 const app = express();
 
@@ -13,7 +14,16 @@ app.use(express.urlencoded({ extended: true })); // для приёма веб-�
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
+app.use((req, res, next) => {
+  req.body.user = {
+    _id: '644f79ff8f25c87ca85c585c',
+  };
+
+  next();
+});
+
 app.use('/users', userRouter);
+app.use('/cards', cardRouter);
 
 app.use(express.static(path.join(__dirname, 'public')));
 

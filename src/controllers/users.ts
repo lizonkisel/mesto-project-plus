@@ -9,7 +9,6 @@ const getUsers = (req: Request, res: Response) => {
 };
 
 const getUser = (req: Request, res: Response) => {
-  // Возможно, тут будет другое имя параметра - не userId
   User.findById(req.params.userId)
     .then((user) => res.send({ data: user }))
     .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
