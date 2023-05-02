@@ -6,7 +6,7 @@ import {
 
 const router = Router();
 
-router.get('/cards', getCards);
+router.get('/', getCards);
 router.post('/', postCard);
 router.delete('/:cardId', deleteCard);
 

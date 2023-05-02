@@ -6,8 +6,8 @@ import {
 
 const router = Router();
 
-router.get('/users', getUsers);
-router.get('/users/:userId', getUser);
+router.get('/', getUsers);
+router.get('/:userId', getUser);
 router.post('/', createUser);
 
 router.patch('/me', updateProfile);
