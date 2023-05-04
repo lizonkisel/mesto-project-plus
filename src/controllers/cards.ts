@@ -6,6 +6,7 @@ import checkExistenceOfUser from '../utils/utils';
 
 const getCards = (req: Request, res: Response) => {
   Card.find({})
+    .populate('owner')
     .then((cards) => res.send({ data: cards }))
     .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
 };
@@ -91,6 +92,7 @@ const putLike = async (req: Request, res: Response) => {
     { $addToSet: { likes: req.body.user._id } },
     { new: true },
   )
+    .populate('likes')
     .then((card) => {
       if (card === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
@@ -131,6 +133,7 @@ const deleteLike = async (req: Request, res: Response) => {
     { $pull: { likes: req.body.user._id } },
     { new: true },
   )
+    .populate('likes')
     .then((card) => {
       if (card === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
