@@ -1,9 +1,10 @@
 import path from 'path';
-import express from 'express';
+import express, { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
 import userRouter from './routes/users';
 import cardRouter from './routes/cards';
+// import notFoundRouter from './routes/not-found';
 
 const app = express();
 
@@ -24,6 +25,10 @@ app.use((req, res, next) => {
 
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
+app.use('/', (req: Request, res: Response) => {
+  res.status(404).send({ message: 'Такой страницы не существует' });
+});
+// app.use(notFoundRouter);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
