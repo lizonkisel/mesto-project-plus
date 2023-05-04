@@ -11,14 +11,19 @@ const getUsers = (req: Request, res: Response) => {
 
 const getUser = (req: Request, res: Response) => {
   if (!req.params.userId) {
-    return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
   }
 
   return User.findById(req.params.userId)
-    .then((user) => res.send({ data: user }))
+    .then((user) => {
+      if (user === null) {
+        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      }
+      return res.send({ data: user });
+    })
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
       }
       return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
     });
@@ -39,17 +44,53 @@ const createUser = (req: Request, res: Response) => {
 const updateProfile = (req: Request, res: Response) => {
   const { name, about } = req.body;
 
-  User.findByIdAndUpdate(req.body.user._id, { name, about }, { new: true })
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' }));
+  if (!req.body.user || !req.body.user._id) {
+    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
+  }
+
+  if (!name && !about) {
+    return res.status(ERROR_CODE_400).send({ message: 'Не передано новое имя или описание пользователя' });
+  }
+
+  return User.findByIdAndUpdate(req.body.user._id, { name, about }, { new: true })
+    .then((user) => {
+      if (user === null) {
+        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      }
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+      }
+      return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const updateAvatar = (req: Request, res: Response) => {
   const { avatar } = req.body;
 
-  User.findByIdAndUpdate(req.body.user._id, { avatar }, { new: true })
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' }));
+  if (!req.body.user || !req.body.user._id) {
+    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
+  }
+
+  if (!avatar) {
+    return res.status(ERROR_CODE_400).send({ message: 'Не передан новый аватар' });
+  }
+
+  return User.findByIdAndUpdate(req.body.user._id, { avatar }, { new: true })
+    .then((user) => {
+      if (user === null) {
+        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      }
+      return res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+      }
+      return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 export {
