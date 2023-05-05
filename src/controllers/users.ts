@@ -52,7 +52,11 @@ const updateProfile = (req: Request, res: Response) => {
     return res.status(ERROR_CODE_400).send({ message: 'Не передано новое имя или описание пользователя' });
   }
 
-  return User.findByIdAndUpdate(req.body.user._id, { name, about }, { new: true })
+  return User.findByIdAndUpdate(
+    req.body.user._id,
+    { name, about },
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       if (user === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
@@ -78,7 +82,11 @@ const updateAvatar = (req: Request, res: Response) => {
     return res.status(ERROR_CODE_400).send({ message: 'Не передан новый аватар' });
   }
 
-  return User.findByIdAndUpdate(req.body.user._id, { avatar }, { new: true })
+  return User.findByIdAndUpdate(
+    req.body.user._id,
+    { avatar },
+    { new: true, runValidators: true },
+  )
     .then((user) => {
       if (user === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
