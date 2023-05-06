@@ -44,16 +44,7 @@ const createUser = async (req: Request, res: Response) => {
 const updateProfile = async (req: Request, res: Response) => {
   try {
     const { name, about } = req.body;
-    if (!name && !about) {
-      const err = new Error('Не передано новое имя или описание пользователя');
-      err.name = 'CustomValid';
-      throw err;
-    }
-    if (!req.body.user || !req.body.user._id) {
-      const err = new Error('Не передан id пользователя');
-      err.name = 'CustomValid';
-      throw err;
-    }
+
     const user = await User.findByIdAndUpdate(
       req.body.user._id,
       { name, about },
@@ -61,14 +52,11 @@ const updateProfile = async (req: Request, res: Response) => {
     ).orFail();
     return res.status(200).send({ data: user });
   } catch (err) {
-    if (err instanceof Error && err.name === 'CustomValid') {
-      return res.status(400).send({ message: err.message });
-    }
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
     }
-    if (err instanceof mongoose.Error.CastError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    if (err instanceof mongoose.Error.ValidationError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления пользователя' });
     }
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
@@ -77,16 +65,7 @@ const updateProfile = async (req: Request, res: Response) => {
 const updateAvatar = async (req: Request, res: Response) => {
   try {
     const { avatar } = req.body;
-    if (!avatar) {
-      const err = new Error('Не передан новый аватар');
-      err.name = 'CustomValid';
-      throw err;
-    }
-    if (!req.body.user || !req.body.user._id) {
-      const err = new Error('Не передан id пользователя');
-      err.name = 'CustomValid';
-      throw err;
-    }
+
     const user = await User.findByIdAndUpdate(
       req.body.user._id,
       { avatar },
@@ -94,14 +73,11 @@ const updateAvatar = async (req: Request, res: Response) => {
     ).orFail();
     return res.status(200).send({ data: user });
   } catch (err) {
-    if (err instanceof Error && err.name === 'CustomValid') {
-      return res.status(400).send({ message: err.message });
-    }
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
     }
-    if (err instanceof mongoose.Error.CastError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    if (err instanceof mongoose.Error.ValidationError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления аватара' });
     }
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
