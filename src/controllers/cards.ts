@@ -22,6 +22,7 @@ const postCard = async (req: Request, res: Response) => {
       err.name = 'CustomValid';
       throw err;
     }
+    // eslint-disable-next-line  no-unused-vars
     const author = await User.findById(req.body.user._id).orFail();
     const card = await Card.create({ name, link, owner: req.body.user._id });
     return res.status(201).send({ data: card });
@@ -64,6 +65,7 @@ const putLike = async (req: Request, res: Response) => {
       err.name = 'CustomValid';
       throw err;
     }
+    // eslint-disable-next-line  no-unused-vars
     const author = await User.findById(req.body.user._id).orFail();
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -95,6 +97,7 @@ const deleteLike = async (req: Request, res: Response) => {
       err.name = 'CustomValid';
       throw err;
     }
+    // eslint-disable-next-line  no-unused-vars
     const author = await User.findById(req.body.user._id).orFail();
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
