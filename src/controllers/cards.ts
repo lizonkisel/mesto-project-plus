@@ -7,8 +7,8 @@ import checkExistenceOfUser from '../utils/utils';
 const getCards = (req: Request, res: Response) => {
   Card.find({})
     .populate('owner')
-    .then((cards) => res.send({ data: cards }))
-    .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
+    .then((cards) => res.status(200).send({ data: cards }))
+    .catch(() => res.status(ERROR_CODE_500).send({ message: 'Произошла какая-то ошибка' }));
 };
 
 const postCard = async (req: Request, res: Response) => {
@@ -42,7 +42,7 @@ const postCard = async (req: Request, res: Response) => {
   }
 
   return Card.create({ name, link, owner: id })
-    .then((card) => res.send({ data: card }))
+    .then((card) => res.status(201).send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Произошла какая-то ошибка' }));
 };
 
@@ -56,7 +56,7 @@ const deleteCard = (req: Request, res: Response) => {
       if (card === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
       }
-      return res.send({ data: card });
+      return res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -97,7 +97,7 @@ const putLike = async (req: Request, res: Response) => {
       if (card === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
       }
-      return res.send({ data: card });
+      return res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {
@@ -138,7 +138,7 @@ const deleteLike = async (req: Request, res: Response) => {
       if (card === null) {
         return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
       }
-      return res.send({ data: card });
+      return res.status(200).send({ data: card });
     })
     .catch((err) => {
       if (err.name === 'CastError') {

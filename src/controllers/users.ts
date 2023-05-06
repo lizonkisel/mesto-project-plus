@@ -1,104 +1,110 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 
 import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../utils/errors';
 import User from '../models/user';
 
-const getUsers = (req: Request, res: Response) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch(() => res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' }));
+const getUsers = async (req: Request, res: Response) => {
+  try {
+    const users = await User.find({});
+    return res.status(200).send({ data: users });
+  } catch (err) {
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+  }
 };
 
-const getUser = (req: Request, res: Response) => {
-  if (!req.params.userId) {
-    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
+const getUser = async (req: Request, res: Response) => {
+  try {
+    const user = await User.findById(req.params.userId).orFail();
+    return res.status(200).send({ data: user });
+  } catch (err) {
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    }
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
-
-  return User.findById(req.params.userId)
-    .then((user) => {
-      if (user === null) {
-        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
-      }
-      return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
-    });
 };
 
-const createUser = (req: Request, res: Response) => {
-  const { name, about, avatar } = req.body;
-
-  if (!name || !about || !avatar) {
-    return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
+const createUser = async (req: Request, res: Response) => {
+  try {
+    const { name, about, avatar } = req.body;
+    const user = await User.create({ name, about, avatar });
+    return res.status(201).send({ data: user });
+  } catch (err) {
+    if (err instanceof mongoose.Error.ValidationError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
+    }
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
-
-  return User.create({ name, about, avatar })
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' }));
 };
 
-const updateProfile = (req: Request, res: Response) => {
-  const { name, about } = req.body;
-
-  if (!req.body.user || !req.body.user._id) {
-    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
+const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const { name, about } = req.body;
+    if (!name && !about) {
+      const err = new Error('Не передано новое имя или описание пользователя');
+      err.name = 'CustomValid';
+      throw err;
+    }
+    if (!req.body.user || !req.body.user._id) {
+      const err = new Error('Не передан id пользователя');
+      err.name = 'CustomValid';
+      throw err;
+    }
+    const user = await User.findByIdAndUpdate(
+      req.body.user._id,
+      { name, about },
+      { new: true, runValidators: true },
+    ).orFail();
+    return res.status(200).send({ data: user });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'CustomValid') {
+      return res.status(400).send({ message: err.message });
+    }
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    }
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
-
-  if (!name && !about) {
-    return res.status(ERROR_CODE_400).send({ message: 'Не передано новое имя или описание пользователя' });
-  }
-
-  return User.findByIdAndUpdate(
-    req.body.user._id,
-    { name, about },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (user === null) {
-        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
-      }
-      return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
-    });
 };
 
-const updateAvatar = (req: Request, res: Response) => {
-  const { avatar } = req.body;
-
-  if (!req.body.user || !req.body.user._id) {
-    return res.status(ERROR_CODE_400).send({ message: 'Не передан id пользователя' });
+const updateAvatar = async (req: Request, res: Response) => {
+  try {
+    const { avatar } = req.body;
+    if (!avatar) {
+      const err = new Error('Не передан новый аватар');
+      err.name = 'CustomValid';
+      throw err;
+    }
+    if (!req.body.user || !req.body.user._id) {
+      const err = new Error('Не передан id пользователя');
+      err.name = 'CustomValid';
+      throw err;
+    }
+    const user = await User.findByIdAndUpdate(
+      req.body.user._id,
+      { avatar },
+      { new: true, runValidators: true },
+    ).orFail();
+    return res.status(200).send({ data: user });
+  } catch (err) {
+    if (err instanceof Error && err.name === 'CustomValid') {
+      return res.status(400).send({ message: err.message });
+    }
+    if (err instanceof mongoose.Error.DocumentNotFoundError) {
+      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+    }
+    if (err instanceof mongoose.Error.CastError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    }
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
-
-  if (!avatar) {
-    return res.status(ERROR_CODE_400).send({ message: 'Не передан новый аватар' });
-  }
-
-  return User.findByIdAndUpdate(
-    req.body.user._id,
-    { avatar },
-    { new: true, runValidators: true },
-  )
-    .then((user) => {
-      if (user === null) {
-        return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
-      }
-      return res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === 'CastError') {
-        return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
-      }
-      return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
-    });
 };
 
 export {
