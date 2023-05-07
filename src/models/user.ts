@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -15,6 +16,19 @@ const userSchema = new mongoose.Schema({
   },
   avatar: {
     type: 'String',
+    required: true,
+  },
+  email: {
+    type: String,
+    required: true,
+    validate: {
+      validator(v: string) {
+        return validator.isEmail(v);
+      },
+    },
+  },
+  password: {
+    type: String,
     required: true,
   },
 });
