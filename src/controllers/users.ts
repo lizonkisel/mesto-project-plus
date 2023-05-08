@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import bcryptjs from 'bcryptjs';
 
 import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../utils/errors';
 import User from '../models/user';
@@ -30,13 +31,23 @@ const getUser = async (req: Request, res: Response) => {
 
 const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, about, avatar } = req.body;
-    const user = await User.create({ name, about, avatar });
+    const {
+      name, about, avatar, email, password,
+    } = req.body;
+
+    const hash = await bcryptjs.hash(password, 10);
+    const user = await User.create({
+      name, about, avatar, email, password: hash,
+    });
     return res.status(201).send({ data: user });
-  } catch (err) {
+  } catch (err:any) {
+    if (err.code === 11000) {
+      return res.status(400).send('Пользователь с таким email уже существует');
+    }
     if (err instanceof mongoose.Error.ValidationError) {
       return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
     }
+
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
 };
