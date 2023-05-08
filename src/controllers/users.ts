@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../utils/errors';
 import User from '../models/user';
@@ -52,6 +53,17 @@ const createUser = async (req: Request, res: Response) => {
   }
 };
 
+const login = async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+      return res.status(200).send({ token });
+    })
+    .catch((err) => res.status(401).send({ message: err.message }));
+};
+
 const updateProfile = async (req: Request, res: Response) => {
   try {
     const { name, about } = req.body;
@@ -95,7 +107,7 @@ const updateAvatar = async (req: Request, res: Response) => {
 };
 
 export {
-  getUsers, getUser, createUser, updateProfile, updateAvatar,
+  getUsers, getUser, createUser, login, updateProfile, updateAvatar,
 };
 
 // https://vsegda-pomnim.com/uploads/posts/2022-04/1651200177_70-vsegda-pomnim-com-p-kisel-iz-yagod-foto-73.jpg

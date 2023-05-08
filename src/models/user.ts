@@ -1,7 +1,22 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
+import bcryptjs from 'bcryptjs';
 
-const userSchema = new mongoose.Schema({
+interface IUser {
+  name: string,
+  about: string,
+  avatar: string,
+  email: string,
+  password: string,
+}
+
+interface IUserModel extends mongoose.Model<IUser> {
+   // eslint-disable-next-line  no-unused-vars
+  findUserByCredentials: (email: string, password: string) =>
+  Promise<mongoose.Document<unknown, any, IUser>>
+}
+
+const userSchema = new mongoose.Schema<IUser, IUserModel>({
   name: {
     type: 'String',
     minlength: 2,
@@ -39,4 +54,21 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model('user', userSchema);
+userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
+  return this.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        throw new Error('Неверная почта или пароль');
+      }
+      const userHash = user.password;
+      return bcryptjs.compare(password, userHash)
+        .then((matched) => {
+          if (!matched) {
+            throw new Error('Неверная почта или пароль');
+          }
+          return user;
+        });
+    });
+});
+
+export default mongoose.model<IUser, IUserModel>('user', userSchema);
