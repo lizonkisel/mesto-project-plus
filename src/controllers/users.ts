@@ -42,13 +42,13 @@ const createUser = async (req: Request, res: Response) => {
     });
     return res.status(201).send({ data: user });
   } catch (err:any) {
+    // Вот эта ошибка не срабатывает (и будет не нужна), когда я напишу обработчик ошибок, используя celebrate
+    // if (err instanceof mongoose.Error.ValidationError) {
+    //   return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
+    // }
     if (err.code === 11000) {
-      return res.status(400).send('Пользователь с таким email уже существует');
+      return res.status(400).send({ message: 'Пользователь с таким email уже существует' });
     }
-    if (err instanceof mongoose.Error.ValidationError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
-    }
-
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
 };
@@ -61,7 +61,13 @@ const login = async (req: Request, res: Response) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
       return res.status(200).send({ token });
     })
-    .catch((err) => res.status(401).send({ message: err.message }));
+    .catch((err) => {
+      // if (err instanceof mongoose.Error.ValidationError) {
+      //   return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для входа в аккаунт' });
+      // }
+      return res.status(401).send({ message: err.message });
+      // return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    });
 };
 
 const updateProfile = async (req: Request, res: Response) => {

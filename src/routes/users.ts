@@ -1,14 +1,16 @@
 import { Router } from 'express';
 
 import {
-  getUsers, getUser, createUser, updateProfile, updateAvatar,
+  getUsers, getUser, updateProfile, updateAvatar,
 } from '../controllers/users';
 
 const router = Router();
 
 router.get('/', getUsers);
 router.get('/:userId', getUser);
-router.post('/', createUser);
+// router.post('/', createUser);
+// router.post('/signin', login);
+// router.post('/signup', createUser);
 
 router.patch('/me', updateProfile);
 router.patch('/me/avatar', updateAvatar);

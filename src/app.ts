@@ -3,6 +3,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import mainRouter from './routes/index';
+import { login, createUser } from './controllers/users';
+import auth from './middlewares/auth';
 
 const app = express();
 
@@ -20,6 +22,11 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.post('/signin', login);
+app.post('/signup', createUser);
+
+app.use(auth);
 
 app.use(mainRouter);
 
