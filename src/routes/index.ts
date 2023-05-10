@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { ERROR_CODE_404 } from '../utils/errors';
+import { ERROR_CODE_404 } from '../errors/error-codes';
 
 import userRouter from './users';
 import cardRouter from './cards';

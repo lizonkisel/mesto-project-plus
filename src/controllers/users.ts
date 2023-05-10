@@ -1,50 +1,49 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../utils/errors';
+import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../errors/error-codes';
 import User from '../models/user';
+import BadRequestError from '../errors/bad-request-err';
+import UnauthorizedError from '../errors/unauthorized-err';
+import NotFoundError from '../errors/not-found-err';
 
-const getUsers = async (req: Request, res: Response) => {
+const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
     return res.status(200).send({ data: users });
   } catch (err) {
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 
-const getUserById = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const user = await User.findById(req.params.userId).orFail();
     return res.status(200).send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      return next(new NotFoundError('Пользователь не найден'));
     }
     if (err instanceof mongoose.Error.CastError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+      return next(new BadRequestError('Передан невалидный id пользователя'));
     }
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 
-const getUserMe = async (req: Request, res: Response) => {
+const getUserMe = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const myId = req.body.user._id;
-
-    const me = await User.findById(myId);
+    const me = await User.findById(myId).orFail();
     return res.status(200).send({ data: me });
   } catch (err) {
-    if (err instanceof mongoose.Error.ValidationError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Передан некорректный токен' });
-    }
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 
-const createUser = async (req: Request, res: Response) => {
+const createUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const {
       name, about, avatar, email, password,
@@ -58,16 +57,17 @@ const createUser = async (req: Request, res: Response) => {
   } catch (err:any) {
     // Вот эта ошибка не срабатывает (и будет не нужна), когда я напишу обработчик ошибок, используя celebrate
     // if (err instanceof mongoose.Error.ValidationError) {
-    //   return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
+    //   return next(new BadRequestError('Переданы некорректные данные в метод создания пользователя'));
+    //   // return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
     // }
     if (err.code === 11000) {
-      return res.status(400).send({ message: 'Пользователь с таким email уже существует' });
+      return next(new BadRequestError('Пользователь с таким email уже существует'));
     }
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 
-const login = async (req: Request, res: Response) => {
+const login = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -81,10 +81,11 @@ const login = async (req: Request, res: Response) => {
       // }
       return res.status(401).send({ message: err.message });
       // return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+      // return next(err);
     });
 };
 
-const updateProfile = async (req: Request, res: Response) => {
+const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, about } = req.body;
 
@@ -101,11 +102,11 @@ const updateProfile = async (req: Request, res: Response) => {
     if (err instanceof mongoose.Error.ValidationError) {
       return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления пользователя' });
     }
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 
-const updateAvatar = async (req: Request, res: Response) => {
+const updateAvatar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { avatar } = req.body;
 
@@ -122,7 +123,7 @@ const updateAvatar = async (req: Request, res: Response) => {
     if (err instanceof mongoose.Error.ValidationError) {
       return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления аватара' });
     }
-    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+    return next(err);
   }
 };
 

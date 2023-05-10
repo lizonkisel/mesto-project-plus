@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import mainRouter from './routes/index';
 import { login, createUser } from './controllers/users';
 import auth from './middlewares/auth';
+import errorsHandler from './middlewares/errors';
 
 const app = express();
 
@@ -15,20 +16,14 @@ app.use(express.urlencoded({ extended: true })); // для приёма веб-�
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-// app.use((req, res, next) => {
-//   req.body.user = {
-//     _id: '6454e30cdf9bc70e05fa234e',
-//   };
-
-//   next();
-// });
-
 app.post('/signin', login);
 app.post('/signup', createUser);
 
 app.use(auth);
 
 app.use(mainRouter);
+
+app.use(errorsHandler);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
