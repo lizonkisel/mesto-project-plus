@@ -29,8 +29,17 @@ const postCard = async (req: Request, res: Response) => {
 
 const deleteCard = async (req: Request, res: Response) => {
   try {
-    const card = await Card.findByIdAndRemove(req.params.cardId).orFail();
-    return res.status(200).send({ data: card });
+    const card = await Card.findById(req.params.cardId).orFail();
+    if (card) {
+      const cardOwner = card.owner;
+      const currentUserId = req.body.user._id;
+      if (cardOwner == currentUserId) {
+        const deletableCard = await Card.findByIdAndRemove(req.params.cardId).orFail();
+        return res.status(200).send({ data: deletableCard });
+      }
+      // Вот это сейчас работает, но ошибка выбрасывается 500, т.к. не реализована ЦОО
+      throw new Error('Нельзя удалить карточку другого пользователя');
+    }
   } catch (err) {
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
@@ -41,6 +50,21 @@ const deleteCard = async (req: Request, res: Response) => {
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
 };
+
+// const deleteCard = async (req: Request, res: Response) => {
+//   try {
+//     const card = await Card.findByIdAndRemove(req.params.cardId).orFail();
+//     return res.status(200).send({ data: card });
+//   } catch (err) {
+//     if (err instanceof mongoose.Error.DocumentNotFoundError) {
+//       return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
+//     }
+//     if (err instanceof mongoose.Error.CastError) {
+//       return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id карточки' });
+//     }
+//     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+//   }
+// };
 
 const putLike = async (req: Request, res: Response) => {
   try {
