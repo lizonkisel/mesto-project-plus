@@ -15,7 +15,7 @@ const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-const getUser = async (req: Request, res: Response) => {
+const getUserById = async (req: Request, res: Response) => {
   try {
     const user = await User.findById(req.params.userId).orFail();
     return res.status(200).send({ data: user });
@@ -25,6 +25,20 @@ const getUser = async (req: Request, res: Response) => {
     }
     if (err instanceof mongoose.Error.CastError) {
       return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id пользователя' });
+    }
+    return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
+  }
+};
+
+const getUserMe = async (req: Request, res: Response) => {
+  try {
+    const myId = req.body.user._id;
+
+    const me = await User.findById(myId);
+    return res.status(200).send({ data: me });
+  } catch (err) {
+    if (err instanceof mongoose.Error.ValidationError) {
+      return res.status(ERROR_CODE_400).send({ message: 'Передан некорректный токен' });
     }
     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
@@ -113,7 +127,7 @@ const updateAvatar = async (req: Request, res: Response) => {
 };
 
 export {
-  getUsers, getUser, createUser, login, updateProfile, updateAvatar,
+  getUsers, getUserById, getUserMe, createUser, login, updateProfile, updateAvatar,
 };
 
 // https://vsegda-pomnim.com/uploads/posts/2022-04/1651200177_70-vsegda-pomnim-com-p-kisel-iz-yagod-foto-73.jpg

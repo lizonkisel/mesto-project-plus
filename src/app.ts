@@ -15,13 +15,13 @@ app.use(express.urlencoded({ extended: true })); // для приёма веб-�
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-app.use((req, res, next) => {
-  req.body.user = {
-    _id: '6454e30cdf9bc70e05fa234e',
-  };
+// app.use((req, res, next) => {
+//   req.body.user = {
+//     _id: '6454e30cdf9bc70e05fa234e',
+//   };
 
-  next();
-});
+//   next();
+// });
 
 app.post('/signin', login);
 app.post('/signup', createUser);
