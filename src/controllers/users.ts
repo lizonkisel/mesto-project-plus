@@ -3,10 +3,9 @@ import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-import { ERROR_CODE_400, ERROR_CODE_404, ERROR_CODE_500 } from '../errors/error-codes';
 import User from '../models/user';
 import BadRequestError from '../errors/bad-request-err';
-import UnauthorizedError from '../errors/unauthorized-err';
+// import UnauthorizedError from '../errors/unauthorized-err';
 import NotFoundError from '../errors/not-found-err';
 
 const getUsers = async (req: Request, res: Response, next: NextFunction) => {
@@ -76,12 +75,9 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       return res.status(200).send({ token });
     })
     .catch((err) => {
-      // if (err instanceof mongoose.Error.ValidationError) {
-      //   return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для входа в аккаунт' });
-      // }
-      return res.status(401).send({ message: err.message });
-      // return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
-      // return next(err);
+      // Вот эта ошибка не срабатывает (и будет не нужна), когда я напишу обработчик ошибок, используя celebrate
+      // return next(new UnauthorizedError('Переданы некорректные данные для входа в аккаунт'));
+      return next(err);
     });
 };
 
@@ -97,10 +93,10 @@ const updateProfile = async (req: Request, res: Response, next: NextFunction) =>
     return res.status(200).send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      return next(new NotFoundError('Пользователь не найден'));
     }
     if (err instanceof mongoose.Error.ValidationError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления пользователя' });
+      return next(new BadRequestError('Переданы некорректные данные для обновления пользователя'));
     }
     return next(err);
   }
@@ -118,10 +114,10 @@ const updateAvatar = async (req: Request, res: Response, next: NextFunction) => 
     return res.status(200).send({ data: user });
   } catch (err) {
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
-      return res.status(ERROR_CODE_404).send({ message: 'Пользователь не найден' });
+      return next(new NotFoundError('Пользователь не найден'));
     }
     if (err instanceof mongoose.Error.ValidationError) {
-      return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные для обновления аватара' });
+      return next(new BadRequestError('Переданы некорректные данные для обновления аватара'));
     }
     return next(err);
   }
