@@ -54,11 +54,6 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     });
     return res.status(201).send({ data: user });
   } catch (err:any) {
-    // Вот эта ошибка не срабатывает (и будет не нужна), когда я напишу обработчик ошибок, используя celebrate
-    // if (err instanceof mongoose.Error.ValidationError) {
-    //   return next(new BadRequestError('Переданы некорректные данные в метод создания пользователя'));
-    //   // return res.status(ERROR_CODE_400).send({ message: 'Переданы некорректные данные в метод создания пользователя' });
-    // }
     if (err.code === 11000) {
       return next(new BadRequestError('Пользователь с таким email уже существует'));
     }
@@ -74,11 +69,7 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
       const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
       return res.status(200).send({ token });
     })
-    .catch((err) => {
-      // Вот эта ошибка не срабатывает (и будет не нужна), когда я напишу обработчик ошибок, используя celebrate
-      // return next(new UnauthorizedError('Переданы некорректные данные для входа в аккаунт'));
-      return next(err);
-    });
+    .catch((err) => next(err));
 };
 
 const updateProfile = async (req: Request, res: Response, next: NextFunction) => {

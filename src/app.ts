@@ -1,11 +1,17 @@
 import path from 'path';
 import express from 'express';
 import mongoose from 'mongoose';
+import { errors } from 'celebrate';
 
 import mainRouter from './routes/index';
 import { login, createUser } from './controllers/users';
 import auth from './middlewares/auth';
 import errorsHandler from './middlewares/errors';
+
+import {
+  validateGetUserById, validateGetUserMe, validateCreateUser,
+  validateLogin, validateUpdateProfile, validateUpdateAvatar,
+} from './middlewares/users-validation';
 
 const app = express();
 
@@ -16,12 +22,14 @@ app.use(express.urlencoded({ extended: true })); // для приёма веб-�
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', validateLogin, login);
+app.post('/signup', validateCreateUser, createUser);
 
 app.use(auth);
 
 app.use(mainRouter);
+
+app.use(errors());
 
 app.use(errorsHandler);
 
