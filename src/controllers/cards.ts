@@ -35,6 +35,7 @@ const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
     const card = await Card.findById(req.params.cardId).orFail();
     const cardOwner = card.owner;
     const currentUserId = req.body.user._id;
+    // eslint-disable-next-line eqeqeq
     if (cardOwner == currentUserId) {
       const deletableCard = await Card.findByIdAndRemove(req.params.cardId).orFail();
       return res.status(200).send({ data: deletableCard });

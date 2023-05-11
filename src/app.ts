@@ -7,6 +7,7 @@ import commonRouter from './routes/common-access';
 import auth from './middlewares/auth';
 import mainRouter from './routes/index';
 import errorsHandler from './middlewares/errors';
+import { requestLogger, errorLogger } from './middlewares/logger';
 
 const app = express();
 
@@ -17,9 +18,13 @@ app.use(express.urlencoded({ extended: true })); // для приёма веб-�
 
 mongoose.connect('mongodb://127.0.0.1:27017/mestodb');
 
+app.use(requestLogger);
+
 app.use(commonRouter);
 app.use(auth);
 app.use(mainRouter);
+
+app.use(errorLogger);
 
 app.use(errors());
 app.use(errorsHandler);
