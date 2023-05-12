@@ -8,10 +8,10 @@ const validatePostCard = celebrate({
   body: Joi.object().keys({
     name: Joi.string().required().min(2).max(30),
     link: Joi.string().required().uri(),
-    user: Joi.object().keys({
-      _id: Joi.string().required().alphanum().hex()
-        .length(24),
-    }).unknown(true),
+    // user: Joi.object().keys({
+    //   _id: Joi.string().required().alphanum().hex()
+    //     .length(24),
+    // }).unknown(true),
   }),
 });
 
@@ -20,12 +20,12 @@ const validateDeleteCard = celebrate({
     cardId: Joi.string().required().alphanum().hex()
       .length(24),
   }),
-  body: Joi.object().keys({
-    user: Joi.object().keys({
-      _id: Joi.string().required().alphanum().hex()
-        .length(24),
-    }).unknown(true),
-  }),
+  // body: Joi.object().keys({
+  //   user: Joi.object().keys({
+  //     _id: Joi.string().required().alphanum().hex()
+  //       .length(24),
+  //   }).unknown(true),
+  // }),
 });
 
 const validatePutLike = celebrate({
@@ -33,12 +33,12 @@ const validatePutLike = celebrate({
     cardId: Joi.string().required().alphanum().hex()
       .length(24),
   }),
-  body: Joi.object().keys({
-    user: Joi.object().keys({
-      _id: Joi.string().required().alphanum().hex()
-        .length(24),
-    }).unknown(true),
-  }),
+  // body: Joi.object().keys({
+  //   user: Joi.object().keys({
+  //     _id: Joi.string().required().alphanum().hex()
+  //       .length(24),
+  //   }).unknown(true),
+  // }),
 });
 
 const validateDeleteLike = celebrate({
@@ -46,12 +46,12 @@ const validateDeleteLike = celebrate({
     cardId: Joi.string().required().alphanum().hex()
       .length(24),
   }),
-  body: Joi.object().keys({
-    user: Joi.object().keys({
-      _id: Joi.string().required().alphanum().hex()
-        .length(24),
-    }).unknown(true),
-  }),
+  // body: Joi.object().keys({
+  //   user: Joi.object().keys({
+  //     _id: Joi.string().required().alphanum().hex()
+  //       .length(24),
+  //   }).unknown(true),
+  // }),
 });
 
 export {

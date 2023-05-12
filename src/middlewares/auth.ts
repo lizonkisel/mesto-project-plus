@@ -1,9 +1,11 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import { Response, NextFunction } from 'express';
+// import { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
+import IRequest from '../types';
 import UnauthorizedError from '../errors/unauthorized-err';
 
-export default (req: Request, res: Response, next: NextFunction) => {
+export default (req: IRequest, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
   if (!authorization) {
     return next(new UnauthorizedError('Необходима авторизация'));
@@ -18,7 +20,7 @@ export default (req: Request, res: Response, next: NextFunction) => {
     return next(new UnauthorizedError('Передан некорректный токен'));
     // throw new Error('Необходима авторизация');
   }
-  req.body.user = payload;
+  req.user = payload as { _id: JwtPayload };
 
   return next();
 };

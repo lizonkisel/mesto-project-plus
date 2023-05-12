@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+import IRequest from '../types';
 import User from '../models/user';
 import BadRequestError from '../errors/bad-request-err';
 // import UnauthorizedError from '../errors/unauthorized-err';
@@ -32,9 +33,9 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const getUserMe = async (req: Request, res: Response, next: NextFunction) => {
+const getUserMe = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
-    const myId = req.body.user._id;
+    const myId = req.user?._id;
     const me = await User.findById(myId).orFail();
     return res.status(200).send({ data: me });
   } catch (err) {
@@ -49,10 +50,15 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     } = req.body;
 
     const hash = await bcryptjs.hash(password, 10);
+    // eslint-disable-next-line  no-unused-vars
     const user = await User.create({
       name, about, avatar, email, password: hash,
     });
-    return res.status(201).send({ data: user });
+    return res.status(201).send({
+      data: {
+        name, about, avatar, email,
+      },
+    });
   } catch (err:any) {
     if (err.code === 11000) {
       return next(new BadRequestError('Пользователь с таким email уже существует'));
@@ -72,12 +78,12 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
     .catch((err) => next(err));
 };
 
-const updateProfile = async (req: Request, res: Response, next: NextFunction) => {
+const updateProfile = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const { name, about } = req.body;
 
     const user = await User.findByIdAndUpdate(
-      req.body.user._id,
+      req.user?._id,
       { name, about },
       { new: true, runValidators: true },
     ).orFail();
@@ -93,12 +99,12 @@ const updateProfile = async (req: Request, res: Response, next: NextFunction) =>
   }
 };
 
-const updateAvatar = async (req: Request, res: Response, next: NextFunction) => {
+const updateAvatar = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const { avatar } = req.body;
 
     const user = await User.findByIdAndUpdate(
-      req.body.user._id,
+      req.user?._id,
       { avatar },
       { new: true, runValidators: true },
     ).orFail();

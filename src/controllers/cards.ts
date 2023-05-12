@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
+import { JwtPayload } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
+import IRequest from '../types';
 import Card from '../models/card';
 import BadRequestError from '../errors/bad-request-err';
 import UnauthorizedError from '../errors/unauthorized-err';
@@ -15,11 +17,11 @@ const getCards = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const postCard = async (req: Request, res: Response, next: NextFunction) => {
+const postCard = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const { name, link } = req.body;
 
-    const card = await Card.create({ name, link, owner: req.body.user._id });
+    const card = await Card.create({ name, link, owner: req.user?._id });
     return res.status(201).send({ data: card });
   } catch (err) {
     if (err instanceof mongoose.Error.ValidationError) {
@@ -30,11 +32,11 @@ const postCard = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
+const deleteCard = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const card = await Card.findById(req.params.cardId).orFail();
     const cardOwner = card.owner;
-    const currentUserId = req.body.user._id;
+    const currentUserId = req.user?._id;
     // eslint-disable-next-line eqeqeq
     if (cardOwner == currentUserId) {
       const deletableCard = await Card.findByIdAndRemove(req.params.cardId).orFail();
@@ -52,26 +54,11 @@ const deleteCard = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-// const deleteCard = async (req: Request, res: Response) => {
-//   try {
-//     const card = await Card.findByIdAndRemove(req.params.cardId).orFail();
-//     return res.status(200).send({ data: card });
-//   } catch (err) {
-//     if (err instanceof mongoose.Error.DocumentNotFoundError) {
-//       return res.status(ERROR_CODE_404).send({ message: 'Карточка не найдена' });
-//     }
-//     if (err instanceof mongoose.Error.CastError) {
-//       return res.status(ERROR_CODE_400).send({ message: 'Передан невалидный id карточки' });
-//     }
-//     return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
-//   }
-// };
-
-const putLike = async (req: Request, res: Response, next: NextFunction) => {
+const putLike = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
-      { $addToSet: { likes: req.body.user._id } },
+      { $addToSet: { likes: req.user?._id } },
       { new: true },
     )
       .populate(['owner', 'likes'])
@@ -88,11 +75,11 @@ const putLike = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-const deleteLike = async (req: Request, res: Response, next: NextFunction) => {
+const deleteLike = async (req: IRequest, res: Response, next: NextFunction) => {
   try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
-      { $pull: { likes: req.body.user._id } },
+      { $pull: { likes: req.user?._id as JwtPayload } },
       { new: true },
     )
       .populate(['owner', 'likes'])

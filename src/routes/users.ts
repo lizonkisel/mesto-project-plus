@@ -4,13 +4,13 @@ import {
   getUsers, getUserById, getUserMe, updateProfile, updateAvatar,
 } from '../controllers/users';
 import {
-  validateGetUserById, validateGetUserMe, validateUpdateProfile, validateUpdateAvatar,
+  validateGetUserById, validateUpdateProfile, validateUpdateAvatar,
 } from '../middlewares/users-validation';
 
 const router = Router();
 
 router.get('/', getUsers);
-router.get('/me', validateGetUserMe, getUserMe);
+router.get('/me', getUserMe);
 router.get('/:userId', validateGetUserById, getUserById);
 
 router.patch('/me', validateUpdateProfile, updateProfile);
