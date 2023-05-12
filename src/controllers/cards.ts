@@ -5,8 +5,8 @@ import mongoose from 'mongoose';
 import IRequest from '../types';
 import Card from '../models/card';
 import BadRequestError from '../errors/bad-request-err';
-import UnauthorizedError from '../errors/unauthorized-err';
 import NotFoundError from '../errors/not-found-err';
+import ForbiddenError from '../errors/forbidden-err';
 
 const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -42,7 +42,7 @@ const deleteCard = async (req: IRequest, res: Response, next: NextFunction) => {
       const deletableCard = await Card.findByIdAndRemove(req.params.cardId).orFail();
       return res.status(200).send({ data: deletableCard });
     }
-    return next(new UnauthorizedError('Нельзя удалить карточку другого пользователя'));
+    return next(new ForbiddenError('Нельзя удалить карточку другого пользователя'));
   } catch (err) {
     if (err instanceof mongoose.Error.DocumentNotFoundError) {
       return next(new NotFoundError('Карточка не найдена'));
