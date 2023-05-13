@@ -1,15 +1,17 @@
-import { Router, Request, Response } from 'express';
-import { ERROR_CODE_404 } from '../errors/error-codes';
+import {
+  Router, Request, Response, NextFunction,
+} from 'express';
 
 import userRouter from './users';
 import cardRouter from './cards';
+import NotFoundError from '../errors/not-found-err';
 
 const router = Router();
 
 router.use('/users', userRouter);
 router.use('/cards', cardRouter);
-router.use('/', (req: Request, res: Response) => {
-  res.status(ERROR_CODE_404).send({ message: 'Такой страницы не существует' });
+router.use('/', (req: Request, res: Response, next: NextFunction) => {
+  next(new NotFoundError('Такой страницы не существует'));
 });
 
 export default router;

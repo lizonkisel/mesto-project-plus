@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import validator from 'validator';
 import bcryptjs from 'bcryptjs';
+import UnauthorizedError from '../errors/unauthorized-err';
 
 interface IUser {
   name: string,
@@ -64,13 +65,13 @@ userSchema.static('findUserByCredentials', function findUserByCredentials(email:
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new Error('Неверная почта или пароль');
+        throw new UnauthorizedError('Передан некорректный токен');
       }
       const userHash = user.password;
       return bcryptjs.compare(password, userHash)
         .then((matched) => {
           if (!matched) {
-            throw new Error('Неверная почта или пароль');
+            throw new UnauthorizedError('Передан некорректный токен');
           }
           return user;
         });

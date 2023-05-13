@@ -8,6 +8,7 @@ import User from '../models/user';
 import BadRequestError from '../errors/bad-request-err';
 // import UnauthorizedError from '../errors/unauthorized-err';
 import NotFoundError from '../errors/not-found-err';
+import ConflictError from '../errors/conflict-err';
 
 const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
@@ -61,7 +62,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     });
   } catch (err:any) {
     if (err.code === 11000) {
-      return next(new BadRequestError('Пользователь с таким email уже существует'));
+      return next(new ConflictError('Пользователь с таким email уже существует'));
     }
     return next(err);
   }
