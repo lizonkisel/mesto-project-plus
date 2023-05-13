@@ -28,7 +28,6 @@ const postCard = async (req: IRequest, res: Response, next: NextFunction) => {
       return next(new BadRequestError('Переданы некорректные данные в метод создания карточки'));
     }
     return next(err);
-    // return res.status(ERROR_CODE_500).send({ message: 'На сервере произошла ошибка' });
   }
 };
 

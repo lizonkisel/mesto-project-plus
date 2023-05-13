@@ -23,15 +23,6 @@ interface IUserModel extends mongoose.Model<IUser> {
   Promise<mongoose.Document<unknown, any, IUser>>
 }
 
-// interface IDeletePassword extends mongoose.Model<IUser> {
-//   deletePassword: () => {
-//     name: string,
-//     about: string,
-//     avatar: string,
-//     email: string,
-//   }
-// }
-
 const userSchema = new mongoose.Schema<IUser, IUserModel>({
   name: {
     type: 'String',
@@ -47,11 +38,6 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>({
   },
   avatar: {
     type: 'String',
-    // validate: {
-    //   validator(v: string) {
-    //     return validator.isURL(v);
-    //   },
-    // },
     validate: {
       validator(v: string) {
         return /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/.test(v);
@@ -74,14 +60,6 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>({
     required: true,
     select: false,
   },
-
-  // methods: {
-  //   deletePassword() {
-  //     const obj = this.toObject();
-  //     delete obj.password;
-  //     return obj;
-  //   },
-  // },
 });
 
 userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {

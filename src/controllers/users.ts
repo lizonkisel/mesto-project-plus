@@ -6,7 +6,6 @@ import jwt from 'jsonwebtoken';
 import IRequest from '../types';
 import User from '../models/user';
 import BadRequestError from '../errors/bad-request-err';
-// import UnauthorizedError from '../errors/unauthorized-err';
 import NotFoundError from '../errors/not-found-err';
 import ConflictError from '../errors/conflict-err';
 
@@ -126,5 +125,3 @@ const updateAvatar = async (req: IRequest, res: Response, next: NextFunction) =>
 export {
   getUsers, getUserById, getUserMe, createUser, login, updateProfile, updateAvatar,
 };
-
-// https://vsegda-pomnim.com/uploads/posts/2022-04/1651200177_70-vsegda-pomnim-com-p-kisel-iz-yagod-foto-73.jpg
