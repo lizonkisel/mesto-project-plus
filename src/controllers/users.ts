@@ -55,9 +55,11 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     const user = await User.create({
       name, about, avatar, email, password: hash,
     });
+    const userWithoutPassword = user.deletePassword();
     return res.status(201).send({
       data: {
-        name, about, avatar, email,
+        // name, about, avatar, email,
+        userWithoutPassword,
       },
     });
   } catch (err:any) {

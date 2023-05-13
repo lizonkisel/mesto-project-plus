@@ -9,6 +9,12 @@ interface IUser {
   avatar: string,
   email: string,
   password: string,
+  deletePassword: () => {
+    name: string,
+    about: string,
+    avatar: string,
+    email: string,
+  }
 }
 
 interface IUserModel extends mongoose.Model<IUser> {
@@ -16,6 +22,15 @@ interface IUserModel extends mongoose.Model<IUser> {
   findUserByCredentials: (email: string, password: string) =>
   Promise<mongoose.Document<unknown, any, IUser>>
 }
+
+// interface IDeletePassword extends mongoose.Model<IUser> {
+//   deletePassword: () => {
+//     name: string,
+//     about: string,
+//     avatar: string,
+//     email: string,
+//   }
+// }
 
 const userSchema = new mongoose.Schema<IUser, IUserModel>({
   name: {
@@ -59,6 +74,14 @@ const userSchema = new mongoose.Schema<IUser, IUserModel>({
     required: true,
     select: false,
   },
+
+  // methods: {
+  //   deletePassword() {
+  //     const obj = this.toObject();
+  //     delete obj.password;
+  //     return obj;
+  //   },
+  // },
 });
 
 userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
@@ -77,5 +100,11 @@ userSchema.static('findUserByCredentials', function findUserByCredentials(email:
         });
     });
 });
+
+userSchema.methods.deletePassword = function deletePassword() {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
 export default mongoose.model<IUser, IUserModel>('user', userSchema);
